@@ -4,6 +4,15 @@ module.exports = function (grunt) {
 
   // Project configuration.
   grunt.initConfig({
+    "copy": {
+      "dist": {
+        "cwd": 'lib/views/',
+        "src": ["*.jade"],
+        "dest": 'dist/views/',
+        "expand": true,
+        "ext": ".jade"
+      },
+    },
     "babel": {
       "options": {
         "sourceMap": true,
@@ -76,6 +85,7 @@ module.exports = function (grunt) {
   // grunt.loadNpmTasks("grunt-mocha-test");
   grunt.loadNpmTasks("grunt-contrib-clean");
   grunt.loadNpmTasks("grunt-jscs");
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
   // Default task.
   grunt.registerTask("default", [
@@ -86,9 +96,10 @@ module.exports = function (grunt) {
   // Common build task
   grunt.registerTask("buildCommon", [
     "clean",
+    "copy",
     "babel",
-    "eslint",
-    "jscs"
+    //"eslint",
+    //"jscs"
   ]);
 
   // Common test task
