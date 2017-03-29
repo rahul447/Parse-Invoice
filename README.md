@@ -1,4 +1,4 @@
-# chat-app
+# Parse Invoice
 
 
 ## Setup
@@ -33,10 +33,4 @@
  
     ```
     grunt babel:dist
-    ```
-
-* Lints the .es6 files
-
-    ```
-    grunt eslint
     ```

@@ -5,52 +5,66 @@ import bodyParser from "body-parser";
 import mwAllowCrossDomain from "./middleware_services/mwAllowCrossDomain";
 import mwErrorHandler from "./middleware_services/mwErrorHandler";
 import ApiError from "./util/apiError";
-import domain from "express-domain-middleware";
-import mongoose from "mongoose";
-import passport from "passport";
-import expressSession from "express-session";
 import path from "path";
-import favicon from "static-favicon";
 import logger from "morgan";
 import cookieParser from "cookie-parser";
-import initPassport from "./services/init";
 import routes from "./routes/index";
+import multer from "multer";
+import cluster from "cluster";
+import os from "os";
 
 let nodeEnv = "local",
   config = Object.freeze(require("../config/" + nodeEnv)),
-  app = express();
+  app = express(), destFolder = config.rootPath + config.folderName + "/";
 
-mongoose.connect(config.mongoDb.connectionString);
+if (cluster.isMaster) {
+  let numWorkers = os.cpus().length;
+  console.log('Master cluster setting up ' + numWorkers + ' workers...');
+  // Fork workers.
+  for(let i = 0; i < numWorkers; i++) {
+    cluster.fork();
+  }
 
-app.use(expressSession({secret: config.secretKey}));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(favicon());
-app.use(cookieParser());
-app.use(logger(nodeEnv));
-app.use(domain);
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(mwAllowCrossDomain);
-app.use(mwErrorHandler);
-app.use('/', routes(passport, config));
+  cluster.on('online', function(worker) {
+    console.log('Worker ' + worker.process.pid + ' is online');
+  });
+
+  cluster.on('exit', function(worker, code, signal) {
+    console.log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
+    console.log('Starting a new worker');
+    cluster.fork();
+  });
+
+}else{
+  app.use(multer({ dest: destFolder}).single('asciifile'));
+  app.use(cookieParser());
+  app.use(logger(nodeEnv));
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(mwAllowCrossDomain);
+  app.use(mwErrorHandler);
+  app.use('/', routes(config, destFolder));
 
 // Sets the relevant config app-wise
-app.set("port", config.http.port);
-app.set("secretKey", config.secretKey);
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+  app.set("port", config.http.port);
+  app.set('views', path.join(__dirname, 'views'));
+  app.set('view engine', 'jade');
 
-initPassport(passport);
 
-app.use(function resourceNotFound(req, res, next) {
-  let apiError = new ApiError(req.id, "Error", [`Resource doesn't exists for RequestId ${req.id}`], "", 404);
+  app.use(function resourceNotFound(req, res, next) {
+    let apiError = new ApiError(req.id, "Error", [`Resource doesn't exists for RequestId ${req.id}`], "", 404);
 
-  next(apiError);
-});
+    next(apiError);
+  });
 
 // Starts the app
-app.listen(app.get("port"), () => {
-  console.log(new Date(), "Server has started and is listening on port: " + app.get("port"));
-});
+  app.listen(app.get("port"), () => {
+    console.log(new Date(), "Server has started and is listening on port: " + app.get("port") + ' with process '
+      + process.pid);
+  });
+}
+
+
+
+module.exports = app; // for testing

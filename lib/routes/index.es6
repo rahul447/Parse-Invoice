@@ -1,42 +1,32 @@
 import express from "express";
-import md5 from "md5";
+import fileOps from "../services/fileOps";
 let router = express.Router();
 
-let isAuthenticated = (req, res, next) => {
-	if (req.isAuthenticated())
-		return next();
-	res.redirect('/');
-};
-
-module.exports = (passport, config) => {
+module.exports = (config, destFolder) => {
 
 	router.get('/', (req, res) => {
-		res.render('index', { message: res.message });
+		res.render('index', { title: 'Parse Invoice' });
 	});
 
-	router.post('/login', passport.authenticate('login', {
-		failureRedirect: '/',
-	}),function(req, res) {
-    res.redirect(config.backendUrl + "/" + req.user.username + "/" + md5(req.user.password));
+  router.post('/upload', function(req, res) {
+    res.redirect('/read?filename=' + req.file.filename);
   });
 
-	router.get('/signup', (req, res) => {
-		res.render('register',{message: res.message});
-	});
+  router.get('/read', (req, res) => {
+    fileOps.getLines(destFolder + req.query.filename, 4, function(err, linesArr) {
 
-	router.post('/signup', passport.authenticate('signup', {
-		successRedirect: config.backendUrl,
-		failureRedirect: '/signup',
-	}));
-
-	/*router.get(config.backendUrl, isAuthenticated, (req, res) => {
-		res.render('home', { user: req.user });
-	});*/
-
-	router.get('/signout', (req, res) => {
-		req.logout();
-		res.redirect('/');
-	});
+      fileOps.operate(linesArr).then(data => {
+        fileOps.writeStream(data, destFolder + config.outFile)
+				.then(w => {
+					res.send(w);
+				}).catch(err => {
+          res.render('error', { error: err });
+				});
+			}).catch(err =>{
+        res.render('error', { error: err });
+			});
+    });
+  });
 
 	return router;
-}
+};

@@ -3,9 +3,9 @@
 // eslint disable no-var
 
 var environmentVariables = {
-  "MONGO_CONNECTION_STRING": process.env.MONGO_CONNECTION_STRING || "mongodb://127.0.0.1:27017/chat-app",
-  "API_SECRET_KEY": process.env.API_SECRET_KEY || "mySecretKey",
-  "BACKEND_URL" : process.env.BACKEND_URL || "http://127.0.0.1:8060",
+  "FOLDER": "archives",
+  "OUTPUTFILE": "RES.txt",
+  "PROJECT_DIR" : "/home/rahul/WebstormProjects/rahul_so_node_test/parse-invoice/"
 };
 
 module.exports = environmentVariables;

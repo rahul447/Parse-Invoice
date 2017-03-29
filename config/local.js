@@ -7,30 +7,12 @@ var environmentVariables = require("./environmentVariables"),
     "http": {
       "protocol": "http",
       "domain": "127.0.0.1",
-      "port": 8050
+      "port": 8060
     },
-    "appName": "chat-app",
-    "mongoDb": {
-      "connectionString": environmentVariables.MONGO_CONNECTION_STRING,
-      "operationTimeout": 4000,
-      "connectionOptions": {
-        "server": {
-          "poolSize": 5,
-          "socketOptions": {
-            "autoReconnect": true,
-            "keepAlive": 0
-          },
-          "reconnectTries": 30,
-          "reconnectInterval": 1000
-        }
-      },
-      "promiseTimeout": 4500
-    },
-    "authorization": {
-      "authorize": false
-    },
-    "secretKey": environmentVariables.API_SECRET_KEY,
-    "backendUrl" : environmentVariables.BACKEND_URL
+    "appName": "parse-invoice",
+    "folderName": environmentVariables.FOLDER,
+    "outFile": environmentVariables.OUTPUTFILE,
+    "rootPath": environmentVariables.PROJECT_DIR,
   };
 
 module.exports = config;
