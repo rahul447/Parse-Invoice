@@ -13,6 +13,7 @@ var environmentVariables = require("./environmentVariables"),
     "folderName": environmentVariables.FOLDER,
     "outFile": environmentVariables.OUTPUTFILE,
     "rootPath": environmentVariables.PROJECT_DIR,
+    "nodeEnv": environmentVariables.NODE_ENV
   };
 
 module.exports = config;

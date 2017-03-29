@@ -17,25 +17,35 @@ let nodeEnv = "local",
   config = Object.freeze(require("../config/" + nodeEnv)),
   app = express(), destFolder = config.rootPath + config.folderName + "/";
 
-if (cluster.isMaster) {
-  let numWorkers = os.cpus().length;
-  console.log('Master cluster setting up ' + numWorkers + ' workers...');
-  // Fork workers.
-  for(let i = 0; i < numWorkers; i++) {
-    cluster.fork();
+console.log(" NODE_ENV Set as", config.nodeEnv);
+
+if (config.nodeEnv !== 'test') {
+  if (cluster.isMaster) {
+    let numWorkers = os.cpus().length;
+    console.log('Master cluster setting up ' + numWorkers + ' workers...');
+    // Fork workers.
+    for(let i = 0; i < numWorkers; i++) {
+      cluster.fork();
+    }
+
+    cluster.on('online', function(worker) {
+      console.log('Worker ' + worker.process.pid + ' is online');
+    });
+
+    cluster.on('exit', function(worker, code, signal) {
+      console.log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
+      console.log('Starting a new worker');
+      cluster.fork();
+    });
+
+  } else {
+    serverSetup();
   }
+} else {
+  serverSetup();
+}
 
-  cluster.on('online', function(worker) {
-    console.log('Worker ' + worker.process.pid + ' is online');
-  });
-
-  cluster.on('exit', function(worker, code, signal) {
-    console.log('Worker ' + worker.process.pid + ' died with code: ' + code + ', and signal: ' + signal);
-    console.log('Starting a new worker');
-    cluster.fork();
-  });
-
-}else{
+function serverSetup(){
   app.use(multer({ dest: destFolder}).single('asciifile'));
   app.use(cookieParser());
   app.use(logger(nodeEnv));
@@ -64,7 +74,5 @@ if (cluster.isMaster) {
       + process.pid);
   });
 }
-
-
 
 module.exports = app; // for testing

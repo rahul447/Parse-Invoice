@@ -37,8 +37,7 @@ module.exports = function (grunt) {
       }
     },
     "clean": [
-      "dist/",
-      "test/"
+      "dist/"
     ],
     "mochaTest": {
       "test": {
