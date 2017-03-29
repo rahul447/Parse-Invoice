@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:rahul447/Parse-Invoice.git"
+    "url": "https://github.com/rahul447/Parse-Invoice.git"
   },
   "dependencies": {
     "body-parser": "^1.17.1",
