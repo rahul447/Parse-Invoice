@@ -75,7 +75,7 @@ module.exports = function (grunt) {
   grunt.registerTask("buildCommon", [
     "clean",
     "copy",
-    "babel",
+    "babel"
   ]);
 
   // Common test task
